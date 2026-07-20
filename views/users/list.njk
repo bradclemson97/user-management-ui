@@ -10,14 +10,14 @@
   <div class="govuk-grid-row">
     <div class="govuk-grid-column-full">
 
-      <div class="govuk-\!-display-flex govuk-\!-justify-content-space-between govuk-\!-align-items-center">
-        <h1 class="govuk-heading-xl govuk-\!-margin-bottom-0">Users</h1>
+      <div class="govuk-!-display-flex govuk-!-justify-content-space-between govuk-!-align-items-center">
+        <h1 class="govuk-heading-xl govuk-!-margin-bottom-0">Users</h1>
         <a href="/users/create" class="govuk-button" data-module="govuk-button">
           Create user
         </a>
       </div>
 
-      <form method="get" action="/" class="govuk-\!-margin-bottom-6">
+      <form method="get" action="/" class="govuk-!-margin-bottom-6">
         <div class="govuk-form-group">
           <label class="govuk-label govuk-label--s" for="name">
             Search by name
@@ -31,7 +31,7 @@
               value="{{ searchName }}"
               autocomplete="off"
             >
-            <button type="submit" class="govuk-button govuk-\!-margin-bottom-0" style="border-radius: 0 4px 4px 0;">
+            <button type="submit" class="govuk-button govuk-!-margin-bottom-0" style="border-radius: 0 4px 4px 0;">
               Search
             </button>
           </div>
@@ -74,14 +74,14 @@
         </table>
 
         {% if totalPages > 1 %}
-          <nav class="govuk-\!-margin-top-4" aria-label="Pagination">
+          <nav class="govuk-!-margin-top-4" aria-label="Pagination">
             <div class="govuk-body">
               {% if currentPage > 0 %}
-                <a href="/?name={{ searchName }}&page={{ currentPage - 1 }}" class="govuk-link govuk-\!-margin-right-4">&laquo; Previous</a>
+                <a href="/?name={{ searchName }}&page={{ currentPage - 1 }}" class="govuk-link govuk-!-margin-right-4">&laquo; Previous</a>
               {% endif %}
               <span>Page {{ currentPage + 1 }} of {{ totalPages }}</span>
               {% if currentPage < totalPages - 1 %}
-                <a href="/?name={{ searchName }}&page={{ currentPage + 1 }}" class="govuk-link govuk-\!-margin-left-4">Next &raquo;</a>
+                <a href="/?name={{ searchName }}&page={{ currentPage + 1 }}" class="govuk-link govuk-!-margin-left-4">Next &raquo;</a>
               {% endif %}
             </div>
           </nav>

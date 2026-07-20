@@ -37,6 +37,12 @@
     }) }}
   {% endif %}
 
+  {% if infoMessage %}
+    {{ govukNotificationBanner({
+      html: "<p class=\"govuk-body\">" + infoMessage + "</p>"
+    }) }}
+  {% endif %}
+
   {% block pageContent %}{% endblock %}
 {% endblock %}
 
