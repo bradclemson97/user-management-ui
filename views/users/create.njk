@@ -1,0 +1,60 @@
+{% extends "layouts/base.njk" %}
+
+{% from "govuk/components/back-link/macro.njk" import govukBackLink %}
+{% from "govuk/components/input/macro.njk" import govukInput %}
+{% from "govuk/components/button/macro.njk" import govukButton %}
+
+{% set pageHeading = "Create user" %}
+
+{% block pageContent %}
+  {{ govukBackLink({ text: "Back to users", href: "/" }) }}
+
+  <div class="govuk-grid-row">
+    <div class="govuk-grid-column-two-thirds">
+
+      <h1 class="govuk-heading-xl">Create user</h1>
+
+      <form method="post" action="/users/create" novalidate>
+
+        {{ govukInput({
+          label: { text: "First name" },
+          id: "firstName",
+          name: "firstName",
+          value: formValues.firstName if formValues,
+          autocomplete: "given-name"
+        }) }}
+
+        {{ govukInput({
+          label: {
+            html: 'Middle name <span class="govuk-hint govuk-!-display-inline">(optional)</span>'
+          },
+          id: "middleName",
+          name: "middleName",
+          value: formValues.middleName if formValues
+        }) }}
+
+        {{ govukInput({
+          label: { text: "Last name" },
+          id: "lastName",
+          name: "lastName",
+          value: formValues.lastName if formValues,
+          autocomplete: "family-name"
+        }) }}
+
+        {{ govukInput({
+          label: { text: "Email address" },
+          id: "email",
+          name: "email",
+          type: "email",
+          value: formValues.email if formValues,
+          autocomplete: "email",
+          spellcheck: false
+        }) }}
+
+        {{ govukButton({ text: "Create user" }) }}
+
+      </form>
+
+    </div>
+  </div>
+{% endblock %}

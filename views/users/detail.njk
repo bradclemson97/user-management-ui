@@ -1,0 +1,94 @@
+{% extends "layouts/base.njk" %}
+
+{% from "govuk/components/back-link/macro.njk" import govukBackLink %}
+{% from "govuk/components/summary-list/macro.njk" import govukSummaryList %}
+{% from "govuk/components/input/macro.njk" import govukInput %}
+{% from "govuk/components/button/macro.njk" import govukButton %}
+
+{% set fullName = (user.userDetails.firstName + " " + user.userDetails.lastName) if user else "User not found" %}
+{% set pageHeading = fullName %}
+
+{% block pageContent %}
+  {{ govukBackLink({ text: "Back to users", href: "/" }) }}
+
+  {% if user %}
+    <h1 class="govuk-heading-xl">{{ fullName }}</h1>
+
+    {{ govukSummaryList({
+      rows: [
+        {
+          key: { text: "Title" },
+          value: { text: user.userDetails.title if user.userDetails.title else "—" }
+        },
+        {
+          key: { text: "First name" },
+          value: { text: user.userDetails.firstName }
+        },
+        {
+          key: { text: "Middle name" },
+          value: { text: user.userDetails.middleName if user.userDetails.middleName else "—" }
+        },
+        {
+          key: { text: "Last name" },
+          value: { text: user.userDetails.lastName }
+        },
+        {
+          key: { text: "Email" },
+          value: { text: user.userDetails.primaryEmail }
+        },
+        {
+          key: { text: "Status" },
+          value: { text: "Active" if user.active == "YES" else "Inactive" }
+        },
+        {
+          key: { text: "Active since" },
+          value: { text: user.userDetails.knownFromDate | replace("T", " ") | truncate(19, true, "") }
+        }
+      ]
+    }) }}
+
+    <hr class="govuk-section-break govuk-section-break--l govuk-section-break--visible">
+
+    <h2 class="govuk-heading-l">Edit details</h2>
+
+    <form method="post" action="/users/{{ user.systemUserId }}" novalidate>
+
+      <div class="govuk-form-group">
+        <label class="govuk-label" for="title">Title <span class="govuk-hint govuk-\!-display-inline">(optional)</span></label>
+        <input class="govuk-input govuk-input--width-5" id="title" name="title" type="text"
+          value="{{ formValues.title if formValues else user.userDetails.title }}">
+      </div>
+
+      <div class="govuk-form-group">
+        <label class="govuk-label" for="firstName">First name</label>
+        <input class="govuk-input govuk-input--width-20" id="firstName" name="firstName" type="text" required
+          value="{{ formValues.firstName if formValues else user.userDetails.firstName }}">
+      </div>
+
+      <div class="govuk-form-group">
+        <label class="govuk-label" for="middleName">Middle name <span class="govuk-hint govuk-\!-display-inline">(optional)</span></label>
+        <input class="govuk-input govuk-input--width-20" id="middleName" name="middleName" type="text"
+          value="{{ formValues.middleName if formValues else user.userDetails.middleName }}">
+      </div>
+
+      <div class="govuk-form-group">
+        <label class="govuk-label" for="lastName">Last name</label>
+        <input class="govuk-input govuk-input--width-20" id="lastName" name="lastName" type="text" required
+          value="{{ formValues.lastName if formValues else user.userDetails.lastName }}">
+      </div>
+
+      <div class="govuk-form-group">
+        <label class="govuk-label" for="primaryEmail">Email address</label>
+        <input class="govuk-input govuk-input--width-30" id="primaryEmail" name="primaryEmail" type="email" required
+          value="{{ formValues.primaryEmail if formValues else user.userDetails.primaryEmail }}">
+      </div>
+
+      {{ govukButton({ text: "Save changes" }) }}
+
+    </form>
+
+  {% else %}
+    <h1 class="govuk-heading-xl">User not found</h1>
+    <p class="govuk-body">The user could not be loaded. <a href="/" class="govuk-link">Return to the user list</a>.</p>
+  {% endif %}
+{% endblock %}

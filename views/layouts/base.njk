@@ -1,0 +1,52 @@
+{% extends "govuk/template.njk" %}
+
+{% from "govuk/components/header/macro.njk" import govukHeader %}
+{% from "govuk/components/footer/macro.njk" import govukFooter %}
+{% from "govuk/components/notification-banner/macro.njk" import govukNotificationBanner %}
+
+{% block pageTitle %}{{ pageHeading if pageHeading else "User Management" }} - User Management{% endblock %}
+
+{% block head %}
+  <link rel="stylesheet" href="/govuk/govuk-frontend.min.css">
+{% endblock %}
+
+{% block header %}
+  {{ govukHeader({
+    homepageUrl: "/",
+    serviceName: "User Management",
+    serviceUrl: "/",
+    navigation: [
+      {
+        href: "/profile",
+        text: (currentUser.userDetails.firstName + " " + currentUser.userDetails.lastName) if currentUser else "Profile",
+        active: activePage == "profile"
+      },
+      {
+        href: "/auth/logout",
+        text: "Sign out"
+      }
+    ]
+  }) }}
+{% endblock %}
+
+{% block content %}
+  {% if errorMessage %}
+    {{ govukNotificationBanner({
+      type: "important",
+      html: "<p class=\"govuk-body\">" + errorMessage + "</p>"
+    }) }}
+  {% endif %}
+
+  {% block pageContent %}{% endblock %}
+{% endblock %}
+
+{% block footer %}
+  {{ govukFooter() }}
+{% endblock %}
+
+{% block bodyEnd %}
+  <script type="module">
+    import { initAll } from '/govuk/govuk-frontend.min.js'
+    initAll()
+  </script>
+{% endblock %}

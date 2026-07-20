@@ -1,0 +1,56 @@
+{% extends "layouts/base.njk" %}
+
+{% from "govuk/components/back-link/macro.njk" import govukBackLink %}
+{% from "govuk/components/summary-list/macro.njk" import govukSummaryList %}
+
+{% set pageHeading = "Your profile" %}
+{% set activePage = "profile" %}
+
+{% block pageContent %}
+  {{ govukBackLink({ text: "Back to users", href: "/" }) }}
+
+  <div class="govuk-grid-row">
+    <div class="govuk-grid-column-two-thirds">
+
+      <h1 class="govuk-heading-xl">Your profile</h1>
+
+      {% if currentUser %}
+        {{ govukSummaryList({
+          rows: [
+            {
+              key: { text: "Title" },
+              value: { text: currentUser.userDetails.title if currentUser.userDetails.title else "—" }
+            },
+            {
+              key: { text: "First name" },
+              value: { text: currentUser.userDetails.firstName }
+            },
+            {
+              key: { text: "Middle name" },
+              value: { text: currentUser.userDetails.middleName if currentUser.userDetails.middleName else "—" }
+            },
+            {
+              key: { text: "Last name" },
+              value: { text: currentUser.userDetails.lastName }
+            },
+            {
+              key: { text: "Email" },
+              value: { text: currentUser.userDetails.primaryEmail }
+            },
+            {
+              key: { text: "Status" },
+              value: { text: "Active" if currentUser.active == "YES" else "Inactive" }
+            },
+            {
+              key: { text: "User ID" },
+              value: { text: currentUser.systemUserId }
+            }
+          ]
+        }) }}
+      {% else %}
+        <p class="govuk-body">Your profile could not be loaded. Please <a href="/auth/logout" class="govuk-link">sign out</a> and sign in again.</p>
+      {% endif %}
+
+    </div>
+  </div>
+{% endblock %}
