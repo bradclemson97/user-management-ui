@@ -3,57 +3,93 @@
 {% from "govuk/components/back-link/macro.njk" import govukBackLink %}
 {% from "govuk/components/input/macro.njk" import govukInput %}
 {% from "govuk/components/button/macro.njk" import govukButton %}
+{% from "govuk/components/panel/macro.njk" import govukPanel %}
+{% from "govuk/components/warning-text/macro.njk" import govukWarningText %}
+{% from "govuk/components/inset-text/macro.njk" import govukInsetText %}
 
 {% set pageHeading = "Create user" %}
 
 {% block pageContent %}
-  {{ govukBackLink({ text: "Back to users", href: "/" }) }}
-
   <div class="govuk-grid-row">
     <div class="govuk-grid-column-two-thirds">
 
-      <h1 class="govuk-heading-xl">Create user</h1>
+      {% if createdUser %}
 
-      <form method="post" action="/users/create" novalidate>
-
-        {{ govukInput({
-          label: { text: "First name" },
-          id: "firstName",
-          name: "firstName",
-          value: formValues.firstName if formValues,
-          autocomplete: "given-name"
+        {{ govukPanel({
+          titleText: "User created",
+          html: createdUser.firstName + " " + createdUser.lastName + "<br><strong>" + createdUser.email + "</strong>"
         }) }}
 
-        {{ govukInput({
-          label: {
-            html: 'Middle name <span class="govuk-hint govuk-!-display-inline">(optional)</span>'
-          },
-          id: "middleName",
-          name: "middleName",
-          value: formValues.middleName if formValues
+        <h2 class="govuk-heading-m govuk-!-margin-top-6">Temporary password</h2>
+
+        {{ govukWarningText({
+          text: "Note this password down now. It will not be shown again.",
+          iconFallbackText: "Warning"
         }) }}
 
-        {{ govukInput({
-          label: { text: "Last name" },
-          id: "lastName",
-          name: "lastName",
-          value: formValues.lastName if formValues,
-          autocomplete: "family-name"
+        {{ govukInsetText({
+          html: "<p class=\"govuk-body\">Share this temporary password securely with the user. They will be prompted to set a new password on first login.</p><p class=\"govuk-body govuk-!-font-size-24 govuk-!-font-weight-bold\">" + createdUser.password + "</p>"
         }) }}
 
-        {{ govukInput({
-          label: { text: "Email address" },
-          id: "email",
-          name: "email",
-          type: "email",
-          value: formValues.email if formValues,
-          autocomplete: "email",
-          spellcheck: false
+        {{ govukButton({
+          text: "Return to home",
+          href: "/",
+          classes: "govuk-button--secondary"
         }) }}
 
-        {{ govukButton({ text: "Create user" }) }}
+        {{ govukButton({
+          text: "Create another user",
+          href: "/users/create"
+        }) }}
 
-      </form>
+      {% else %}
+
+        {{ govukBackLink({ text: "Back to users", href: "/" }) }}
+
+        <h1 class="govuk-heading-xl">Create user</h1>
+
+        <form method="post" action="/users/create" novalidate>
+
+          {{ govukInput({
+            label: { text: "First name" },
+            id: "firstName",
+            name: "firstName",
+            value: formValues.firstName if formValues,
+            autocomplete: "given-name"
+          }) }}
+
+          {{ govukInput({
+            label: {
+              html: 'Middle name <span class="govuk-hint govuk-!-display-inline">(optional)</span>'
+            },
+            id: "middleName",
+            name: "middleName",
+            value: formValues.middleName if formValues
+          }) }}
+
+          {{ govukInput({
+            label: { text: "Last name" },
+            id: "lastName",
+            name: "lastName",
+            value: formValues.lastName if formValues,
+            autocomplete: "family-name"
+          }) }}
+
+          {{ govukInput({
+            label: { text: "Email address" },
+            id: "email",
+            name: "email",
+            type: "email",
+            value: formValues.email if formValues,
+            autocomplete: "email",
+            spellcheck: false
+          }) }}
+
+          {{ govukButton({ text: "Create user" }) }}
+
+        </form>
+
+      {% endif %}
 
     </div>
   </div>

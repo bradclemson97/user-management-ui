@@ -23,6 +23,11 @@ export interface SpringPage<T> {
   size: number
 }
 
+export interface CreateUserResponse {
+  systemUserId: string
+  password: string
+}
+
 export interface CreateUserBody {
   firstName: string
   middleName?: string
@@ -36,6 +41,17 @@ export interface UpdateUserBody {
   middleName?: string
   lastName: string
   primaryEmail: string
+}
+
+export interface RoleResponse {
+  id: number
+  roleName: string
+  roleTypeCode: 'PERMISSION' | 'CAPABILITY'
+  description: string
+}
+
+export interface UserRoleDto {
+  roleResponse: RoleResponse
 }
 
 // Augment express-session
