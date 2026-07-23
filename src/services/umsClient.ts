@@ -1,6 +1,6 @@
 import axios from 'axios'
 import config from '../config'
-import type { UserDto, SpringPage, CreateUserBody, UpdateUserBody } from '../types'
+import type { UserDto, SpringPage, CreateUserBody, CreateUserResponse, UpdateUserBody } from '../types'
 
 function client(accessToken: string) {
   return axios.create({
@@ -36,8 +36,8 @@ export async function getCurrentUser(accessToken: string): Promise<UserDto> {
   return res.data
 }
 
-export async function createUser(accessToken: string, body: CreateUserBody): Promise<UserDto> {
-  const res = await client(accessToken).post<UserDto>('/v1/user', body)
+export async function createUser(accessToken: string, body: CreateUserBody): Promise<CreateUserResponse> {
+  const res = await client(accessToken).post<CreateUserResponse>('/v1/user', body)
   return res.data
 }
 

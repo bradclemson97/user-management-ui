@@ -57,13 +57,15 @@ usersRouter.get('/create', requireAuth, (req, res) => {
 usersRouter.post('/create', requireAuth, async (req, res) => {
   const { firstName, middleName, lastName, email } = req.body as Record<string, string>
   try {
-    await ums.createUser(req.session.accessToken!, {
+    const result = await ums.createUser(req.session.accessToken!, {
       firstName: firstName.trim(),
       middleName: middleName?.trim() || undefined,
       lastName: lastName.trim(),
       email: email.trim(),
     })
-    res.redirect('/')
+    res.render('users/create.njk', templateVars(req, {
+      createdUser: { firstName: firstName.trim(), lastName: lastName.trim(), email: email.trim(), password: result.password },
+    }))
   } catch (err) {
     res.render('users/create.njk', templateVars(req, {
       errorMessage: errorMessage(err),

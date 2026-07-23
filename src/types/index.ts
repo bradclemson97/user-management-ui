@@ -23,6 +23,11 @@ export interface SpringPage<T> {
   size: number
 }
 
+export interface CreateUserResponse {
+  systemUserId: string
+  password: string
+}
+
 export interface CreateUserBody {
   firstName: string
   middleName?: string
