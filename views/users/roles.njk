@@ -1,0 +1,64 @@
+{% extends "layouts/base.njk" %}
+
+{% from "govuk/components/back-link/macro.njk" import govukBackLink %}
+{% from "govuk/components/checkboxes/macro.njk" import govukCheckboxes %}
+{% from "govuk/components/button/macro.njk" import govukButton %}
+{% from "govuk/components/error-summary/macro.njk" import govukErrorSummary %}
+
+{% set fullName = (user.userDetails.firstName + " " + user.userDetails.lastName) if user else "User not found" %}
+{% set pageHeading = "Manage roles — " + fullName %}
+
+{% block pageContent %}
+  {{ govukBackLink({ text: "Back to user", href: "/users/" + (user.systemUserId if user else "") }) }}
+
+  {% if errorMessage %}
+    {{ govukErrorSummary({
+      titleText: "There is a problem",
+      errorList: [{ text: errorMessage }]
+    }) }}
+  {% endif %}
+
+  {% if errorMessage and not user %}
+    <h1 class="govuk-heading-xl">Manage roles</h1>
+    <p class="govuk-body"><a href="/" class="govuk-link">Return to the user list</a>.</p>
+  {% elif user %}
+    <h1 class="govuk-heading-xl">Manage roles</h1>
+    <p class="govuk-body">Assign permission roles to <strong>{{ fullName }}</strong>.</p>
+
+    <form method="post" action="/users/{{ user.systemUserId }}/roles" novalidate>
+
+      {% if allRoles.length %}
+        {% set checkboxItems = [] %}
+        {% for role in allRoles %}
+          {% set checked = role.id in assignedRoleIds %}
+          {% set _ = checkboxItems.push({
+            value: role.id,
+            text: role.roleName,
+            hint: { text: role.description } if role.description,
+            checked: checked
+          }) %}
+        {% endfor %}
+
+        {{ govukCheckboxes({
+          name: "roleIds",
+          fieldset: {
+            legend: {
+              text: "Select roles",
+              classes: "govuk-fieldset__legend--m"
+            }
+          },
+          items: checkboxItems
+        }) }}
+      {% else %}
+        <p class="govuk-body">No assignable roles are available.</p>
+      {% endif %}
+
+      {{ govukButton({ text: "Save roles" }) }}
+
+    </form>
+
+  {% else %}
+    <h1 class="govuk-heading-xl">User not found</h1>
+    <p class="govuk-body">The user could not be loaded. <a href="/" class="govuk-link">Return to the user list</a>.</p>
+  {% endif %}
+{% endblock %}

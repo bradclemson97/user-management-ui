@@ -43,6 +43,17 @@ export interface UpdateUserBody {
   primaryEmail: string
 }
 
+export interface RoleResponse {
+  id: number
+  roleName: string
+  roleTypeCode: 'PERMISSION' | 'CAPABILITY'
+  description: string
+}
+
+export interface UserRoleDto {
+  roleResponse: RoleResponse
+}
+
 // Augment express-session
 declare module 'express-session' {
   interface SessionData {

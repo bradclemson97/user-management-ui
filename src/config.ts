@@ -21,6 +21,9 @@ const config = {
   ums: {
     baseUrl: process.env.UMS_BASE_URL ?? 'http://localhost:8080',
   },
+  acm: {
+    baseUrl: process.env.ACM_BASE_URL ?? 'http://localhost:8130',
+  },
 }
 
 export default config

@@ -1,6 +1,7 @@
 import { Router } from 'express'
 import { requireAuth } from '../middleware/requireAuth'
 import * as ums from '../services/umsClient'
+import * as acm from '../services/acmClient'
 import type { UserDto } from '../types'
 import { isAxiosError } from 'axios'
 
@@ -71,6 +72,58 @@ usersRouter.post('/create', requireAuth, async (req, res) => {
       errorMessage: errorMessage(err),
       formValues: { firstName, middleName, lastName, email },
     }))
+  }
+})
+
+// Manage user roles — form
+usersRouter.get('/:id/roles', requireAuth, async (req, res) => {
+  try {
+    const [user, allRoles, userRoles] = await Promise.all([
+      ums.getUser(req.session.accessToken!, req.params.id),
+      acm.getPermissionRoles(req.session.accessToken!),
+      acm.getUserRoles(req.session.accessToken!, req.params.id),
+    ])
+    const assignedRoleIds = new Set(userRoles.map(ur => ur.roleResponse.id))
+    res.render('users/roles.njk', templateVars(req, { user, allRoles, assignedRoleIds: [...assignedRoleIds] }))
+  } catch (err) {
+    res.render('users/roles.njk', templateVars(req, {
+      user: null,
+      allRoles: [],
+      assignedRoleIds: [],
+      errorMessage: errorMessage(err),
+    }))
+  }
+})
+
+// Manage user roles — submit
+usersRouter.post('/:id/roles', requireAuth, async (req, res) => {
+  const rawRoleIds = req.body.roleIds
+  const roleIds: number[] = rawRoleIds
+    ? (Array.isArray(rawRoleIds) ? rawRoleIds : [rawRoleIds]).map(Number)
+    : []
+  try {
+    await acm.saveUserRoles(req.session.accessToken!, req.params.id, roleIds)
+    res.redirect(`/users/${req.params.id}`)
+  } catch (err) {
+    try {
+      const [user, allRoles] = await Promise.all([
+        ums.getUser(req.session.accessToken!, req.params.id),
+        acm.getPermissionRoles(req.session.accessToken!),
+      ])
+      res.render('users/roles.njk', templateVars(req, {
+        user,
+        allRoles,
+        assignedRoleIds: roleIds,
+        errorMessage: errorMessage(err),
+      }))
+    } catch {
+      res.render('users/roles.njk', templateVars(req, {
+        user: null,
+        allRoles: [],
+        assignedRoleIds: roleIds,
+        errorMessage: errorMessage(err),
+      }))
+    }
   }
 })
 
