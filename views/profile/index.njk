@@ -2,6 +2,7 @@
 
 {% from "govuk/components/back-link/macro.njk" import govukBackLink %}
 {% from "govuk/components/summary-list/macro.njk" import govukSummaryList %}
+{% from "govuk/components/button/macro.njk" import govukButton %}
 
 {% set pageHeading = "Your profile" %}
 {% set activePage = "profile" %}
@@ -47,9 +48,31 @@
             }
           ]
         }) }}
+
       {% else %}
-        <p class="govuk-body">Your profile could not be loaded. Please <a href="/auth/logout" class="govuk-link">sign out</a> and sign in again.</p>
+        {{ govukSummaryList({
+          rows: [
+            {
+              key: { text: "Name" },
+              value: { text: jwtUser.name }
+            },
+            {
+              key: { text: "Email" },
+              value: { text: jwtUser.email }
+            },
+            {
+              key: { text: "User ID" },
+              value: { text: jwtUser.systemUserId }
+            }
+          ]
+        }) }}
       {% endif %}
+
+      {{ govukButton({
+        text: "Sign out",
+        href: "/auth/logout",
+        classes: "govuk-button--warning govuk-!-margin-top-4"
+      }) }}
 
     </div>
   </div>
