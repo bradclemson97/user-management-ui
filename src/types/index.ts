@@ -11,7 +11,7 @@ export interface UserDetailsDto {
 
 export interface UserDto {
   systemUserId: string
-  active: 'YES' | 'NO'
+  active: boolean
   userDetails: UserDetailsDto
 }
 
@@ -63,6 +63,7 @@ declare module 'express-session' {
     nonce?: string
     codeVerifier?: string
     currentUser?: UserDto
+    currentUserRoles?: string[]
     returnTo?: string
   }
 }

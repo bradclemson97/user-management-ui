@@ -12,9 +12,11 @@
 
       <div class="govuk-!-display-flex govuk-!-justify-content-space-between govuk-!-align-items-center">
         <h1 class="govuk-heading-xl govuk-!-margin-bottom-0">Users</h1>
-        <a href="/users/create" class="govuk-button" data-module="govuk-button">
-          Create user
-        </a>
+        {% if "User Administration" in currentUserRoles %}
+          <a href="/users/create" class="govuk-button" data-module="govuk-button">
+            Create user
+          </a>
+        {% endif %}
       </div>
 
       <form method="get" action="/" class="govuk-!-margin-bottom-6">
@@ -64,8 +66,8 @@
                 </td>
                 <td class="govuk-table__cell">{{ user.userDetails.primaryEmail }}</td>
                 <td class="govuk-table__cell">
-                  <strong class="govuk-tag {% if user.active == 'YES' %}govuk-tag--green{% else %}govuk-tag--red{% endif %}">
-                    {{ "Active" if user.active == "YES" else "Inactive" }}
+                  <strong class="govuk-tag {% if user.active %}govuk-tag--green{% else %}govuk-tag--red{% endif %}">
+                    {{ "Active" if user.active else "Inactive" }}
                   </strong>
                 </td>
               </tr>
