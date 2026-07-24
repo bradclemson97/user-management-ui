@@ -11,7 +11,7 @@ export interface UserDetailsDto {
 
 export interface UserDto {
   systemUserId: string
-  active: 'YES' | 'NO'
+  active: boolean
   userDetails: UserDetailsDto
 }
 
@@ -54,6 +54,10 @@ export interface UserRoleDto {
   roleResponse: RoleResponse
 }
 
+export interface ResetPasswordResponse {
+  password: string
+}
+
 // Augment express-session
 declare module 'express-session' {
   interface SessionData {
@@ -63,6 +67,7 @@ declare module 'express-session' {
     nonce?: string
     codeVerifier?: string
     currentUser?: UserDto
+    currentUserRoles?: string[]
     returnTo?: string
   }
 }

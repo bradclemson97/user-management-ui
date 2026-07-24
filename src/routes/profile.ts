@@ -17,6 +17,7 @@ profileRouter.get('/', requireAuth, (req, res) => {
   const jwt = req.session.accessToken ? decodeJwtPayload(req.session.accessToken) : {}
   res.render('profile/index.njk', {
     currentUser: req.session.currentUser,
+    currentUserRoles: req.session.currentUserRoles ?? [],
     jwtUser: {
       name: [jwt.given_name, jwt.family_name].filter(Boolean).join(' ') || jwt.preferred_username || 'Unknown',
       email: jwt.email ?? jwt.preferred_username ?? '—',

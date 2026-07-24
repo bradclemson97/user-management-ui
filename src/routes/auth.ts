@@ -1,7 +1,18 @@
 import { Router } from 'express'
 import { generators, type Client } from 'openid-client'
 import { getCurrentUser } from '../services/umsClient'
+import { getUserRoles } from '../services/acmClient'
 import config from '../config'
+
+function decodeJwtPayload(token: string): Record<string, unknown> {
+  const parts = token.split('.')
+  if (parts.length !== 3) return {}
+  try {
+    return JSON.parse(Buffer.from(parts[1], 'base64url').toString('utf8'))
+  } catch {
+    return {}
+  }
+}
 
 export function authRouter(oidcClient: Client): Router {
   const router = Router()
@@ -47,10 +58,24 @@ export function authRouter(oidcClient: Client): Router {
       req.session.codeVerifier = undefined
 
       if (req.session.accessToken) {
+        const jwt = decodeJwtPayload(req.session.accessToken)
+        const systemUserId = jwt.systemUserId as string | undefined
+
         try {
           req.session.currentUser = await getCurrentUser(req.session.accessToken)
         } catch {
           // Non-fatal: user may not yet exist in UMS
+        }
+
+        if (systemUserId) {
+          try {
+            const userRoles = await getUserRoles(req.session.accessToken, systemUserId)
+            req.session.currentUserRoles = userRoles.map(ur => ur.roleResponse.roleName)
+          } catch {
+            req.session.currentUserRoles = []
+          }
+        } else {
+          req.session.currentUserRoles = []
         }
       }
 

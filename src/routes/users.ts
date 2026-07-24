@@ -1,7 +1,9 @@
 import { Router } from 'express'
 import { requireAuth } from '../middleware/requireAuth'
+import { requireRole } from '../middleware/requireRole'
 import * as ums from '../services/umsClient'
 import * as acm from '../services/acmClient'
+import * as km from '../services/kmClient'
 import type { UserDto } from '../types'
 import { isAxiosError } from 'axios'
 
@@ -15,8 +17,8 @@ function errorMessage(err: unknown): string {
   return err instanceof Error ? err.message : 'An unexpected error occurred'
 }
 
-function templateVars(req: { session: { currentUser?: UserDto } }, extra: Record<string, unknown>) {
-  return { currentUser: req.session.currentUser, ...extra }
+function templateVars(req: { session: { currentUser?: UserDto; currentUserRoles?: string[] } }, extra: Record<string, unknown>) {
+  return { currentUser: req.session.currentUser, currentUserRoles: req.session.currentUserRoles ?? [], ...extra }
 }
 
 // User list + search
@@ -50,12 +52,12 @@ usersRouter.get('/', requireAuth, async (req, res) => {
 })
 
 // Create user — form
-usersRouter.get('/create', requireAuth, (req, res) => {
+usersRouter.get('/create', requireAuth, requireRole('User Administration'), (req, res) => {
   res.render('users/create.njk', templateVars(req, {}))
 })
 
 // Create user — submit
-usersRouter.post('/create', requireAuth, async (req, res) => {
+usersRouter.post('/create', requireAuth, requireRole('User Administration'), async (req, res) => {
   const { firstName, middleName, lastName, email } = req.body as Record<string, string>
   try {
     const result = await ums.createUser(req.session.accessToken!, {
@@ -65,7 +67,7 @@ usersRouter.post('/create', requireAuth, async (req, res) => {
       email: email.trim(),
     })
     res.render('users/create.njk', templateVars(req, {
-      createdUser: { firstName: firstName.trim(), lastName: lastName.trim(), email: email.trim(), password: result.password },
+      createdUser: { systemUserId: result.systemUserId, firstName: firstName.trim(), lastName: lastName.trim(), email: email.trim(), password: result.password },
     }))
   } catch (err) {
     res.render('users/create.njk', templateVars(req, {
@@ -76,7 +78,7 @@ usersRouter.post('/create', requireAuth, async (req, res) => {
 })
 
 // Manage user roles — form
-usersRouter.get('/:id/roles', requireAuth, async (req, res) => {
+usersRouter.get('/:id/roles', requireAuth, requireRole('User Administration'), async (req, res) => {
   try {
     const [user, allRoles, userRoles] = await Promise.all([
       ums.getUser(req.session.accessToken!, req.params.id),
@@ -96,7 +98,7 @@ usersRouter.get('/:id/roles', requireAuth, async (req, res) => {
 })
 
 // Manage user roles — submit
-usersRouter.post('/:id/roles', requireAuth, async (req, res) => {
+usersRouter.post('/:id/roles', requireAuth, requireRole('User Administration'), async (req, res) => {
   const rawRoleIds = req.body.roleIds
   const roleIds: number[] = rawRoleIds
     ? (Array.isArray(rawRoleIds) ? rawRoleIds : [rawRoleIds]).map(Number)
@@ -127,6 +129,32 @@ usersRouter.post('/:id/roles', requireAuth, async (req, res) => {
   }
 })
 
+// Reset password — confirmation page
+usersRouter.get('/:id/reset-password', requireAuth, requireRole('User Administration'), async (req, res) => {
+  try {
+    const user = await ums.getUser(req.session.accessToken!, req.params.id)
+    res.render('users/reset-password.njk', templateVars(req, { user }))
+  } catch (err) {
+    res.render('users/reset-password.njk', templateVars(req, { user: null, errorMessage: errorMessage(err) }))
+  }
+})
+
+// Reset password — execute
+usersRouter.post('/:id/reset-password', requireAuth, requireRole('User Administration'), async (req, res) => {
+  try {
+    const user = await ums.getUser(req.session.accessToken!, req.params.id)
+    const result = await km.resetPassword(req.session.accessToken!, user.userDetails.primaryEmail)
+    res.render('users/reset-password.njk', templateVars(req, { user, newPassword: result.password }))
+  } catch (err) {
+    try {
+      const user = await ums.getUser(req.session.accessToken!, req.params.id)
+      res.render('users/reset-password.njk', templateVars(req, { user, errorMessage: errorMessage(err) }))
+    } catch {
+      res.render('users/reset-password.njk', templateVars(req, { user: null, errorMessage: errorMessage(err) }))
+    }
+  }
+})
+
 // View / edit user
 usersRouter.get('/:id', requireAuth, async (req, res) => {
   try {
@@ -141,7 +169,7 @@ usersRouter.get('/:id', requireAuth, async (req, res) => {
 })
 
 // Update user — submit
-usersRouter.post('/:id', requireAuth, async (req, res) => {
+usersRouter.post('/:id', requireAuth, requireRole('User Administration'), async (req, res) => {
   const { title, firstName, middleName, lastName, primaryEmail } = req.body as Record<string, string>
   try {
     await ums.updateUser(req.session.accessToken!, req.params.id, {
