@@ -54,6 +54,10 @@ export interface UserRoleDto {
   roleResponse: RoleResponse
 }
 
+export interface ResetPasswordResponse {
+  password: string
+}
+
 // Augment express-session
 declare module 'express-session' {
   interface SessionData {

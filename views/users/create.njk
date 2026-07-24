@@ -32,14 +32,20 @@
         }) }}
 
         {{ govukButton({
-          text: "Return to home",
-          href: "/",
-          classes: "govuk-button--secondary"
+          text: "Assign roles to this user",
+          href: "/users/" + createdUser.systemUserId + "/roles"
         }) }}
 
         {{ govukButton({
           text: "Create another user",
-          href: "/users/create"
+          href: "/users/create",
+          classes: "govuk-button--secondary"
+        }) }}
+
+        {{ govukButton({
+          text: "Return to home",
+          href: "/",
+          classes: "govuk-button--secondary"
         }) }}
 
       {% else %}

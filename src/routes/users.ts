@@ -3,6 +3,7 @@ import { requireAuth } from '../middleware/requireAuth'
 import { requireRole } from '../middleware/requireRole'
 import * as ums from '../services/umsClient'
 import * as acm from '../services/acmClient'
+import * as km from '../services/kmClient'
 import type { UserDto } from '../types'
 import { isAxiosError } from 'axios'
 
@@ -66,7 +67,7 @@ usersRouter.post('/create', requireAuth, requireRole('User Administration'), asy
       email: email.trim(),
     })
     res.render('users/create.njk', templateVars(req, {
-      createdUser: { firstName: firstName.trim(), lastName: lastName.trim(), email: email.trim(), password: result.password },
+      createdUser: { systemUserId: result.systemUserId, firstName: firstName.trim(), lastName: lastName.trim(), email: email.trim(), password: result.password },
     }))
   } catch (err) {
     res.render('users/create.njk', templateVars(req, {
@@ -124,6 +125,32 @@ usersRouter.post('/:id/roles', requireAuth, requireRole('User Administration'), 
         assignedRoleIds: roleIds,
         errorMessage: errorMessage(err),
       }))
+    }
+  }
+})
+
+// Reset password — confirmation page
+usersRouter.get('/:id/reset-password', requireAuth, requireRole('User Administration'), async (req, res) => {
+  try {
+    const user = await ums.getUser(req.session.accessToken!, req.params.id)
+    res.render('users/reset-password.njk', templateVars(req, { user }))
+  } catch (err) {
+    res.render('users/reset-password.njk', templateVars(req, { user: null, errorMessage: errorMessage(err) }))
+  }
+})
+
+// Reset password — execute
+usersRouter.post('/:id/reset-password', requireAuth, requireRole('User Administration'), async (req, res) => {
+  try {
+    const user = await ums.getUser(req.session.accessToken!, req.params.id)
+    const result = await km.resetPassword(req.session.accessToken!, user.userDetails.primaryEmail)
+    res.render('users/reset-password.njk', templateVars(req, { user, newPassword: result.password }))
+  } catch (err) {
+    try {
+      const user = await ums.getUser(req.session.accessToken!, req.params.id)
+      res.render('users/reset-password.njk', templateVars(req, { user, errorMessage: errorMessage(err) }))
+    } catch {
+      res.render('users/reset-password.njk', templateVars(req, { user: null, errorMessage: errorMessage(err) }))
     }
   }
 })

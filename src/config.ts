@@ -24,6 +24,9 @@ const config = {
   acm: {
     baseUrl: process.env.ACM_BASE_URL ?? 'http://localhost:8130',
   },
+  km: {
+    baseUrl: process.env.KM_BASE_URL ?? 'http://localhost:8210',
+  },
 }
 
 export default config
