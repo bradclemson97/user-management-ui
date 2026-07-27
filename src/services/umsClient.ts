@@ -41,6 +41,10 @@ export async function createUser(accessToken: string, body: CreateUserBody): Pro
   return res.data
 }
 
+export async function recordLogin(accessToken: string, systemUserId: string): Promise<void> {
+  await client(accessToken).put(`/v1/user/${systemUserId}/login`)
+}
+
 export async function updateUser(
   accessToken: string,
   systemUserId: string,
@@ -48,4 +52,12 @@ export async function updateUser(
 ): Promise<UserDto> {
   const res = await client(accessToken).put<UserDto>(`/v1/user/${systemUserId}`, body)
   return res.data
+}
+
+export async function lockUser(accessToken: string, systemUserId: string): Promise<void> {
+  await client(accessToken).put(`/v1/user/${systemUserId}/lock`)
+}
+
+export async function unlockUser(accessToken: string, systemUserId: string): Promise<void> {
+  await client(accessToken).delete(`/v1/user/${systemUserId}/lock`)
 }

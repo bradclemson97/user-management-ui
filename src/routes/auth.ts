@@ -1,6 +1,6 @@
 import { Router } from 'express'
 import { generators, type Client } from 'openid-client'
-import { getCurrentUser } from '../services/umsClient'
+import { getCurrentUser, recordLogin } from '../services/umsClient'
 import { getUserRoles } from '../services/acmClient'
 import config from '../config'
 
@@ -67,12 +67,23 @@ export function authRouter(oidcClient: Client): Router {
           // Non-fatal: user may not yet exist in UMS
         }
 
+        if (req.session.currentUser?.locked) {
+          req.session.destroy(() => {})
+          return res.redirect('/auth/account-locked')
+        }
+
         if (systemUserId) {
           try {
             const userRoles = await getUserRoles(req.session.accessToken, systemUserId)
             req.session.currentUserRoles = userRoles.map(ur => ur.roleResponse.roleName)
           } catch {
             req.session.currentUserRoles = []
+          }
+
+          try {
+            await recordLogin(req.session.accessToken, systemUserId)
+          } catch {
+            // Non-fatal: login tracking is best-effort
           }
         } else {
           req.session.currentUserRoles = []
@@ -86,6 +97,10 @@ export function authRouter(oidcClient: Client): Router {
       console.error('OIDC callback error:', err)
       res.redirect('/auth/login')
     }
+  })
+
+  router.get('/account-locked', (req, res) => {
+    res.render('auth/account-locked.njk', { currentUser: undefined, currentUserRoles: [] })
   })
 
   router.get('/logout', (req, res) => {
