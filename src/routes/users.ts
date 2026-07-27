@@ -155,6 +155,36 @@ usersRouter.post('/:id/reset-password', requireAuth, requireRole('User Administr
   }
 })
 
+// Lock user
+usersRouter.post('/:id/lock', requireAuth, requireRole('User Administration'), async (req, res) => {
+  try {
+    await ums.lockUser(req.session.accessToken!, req.params.id)
+    res.redirect(`/users/${req.params.id}`)
+  } catch (err) {
+    try {
+      const user = await ums.getUser(req.session.accessToken!, req.params.id)
+      res.render('users/detail.njk', templateVars(req, { user, errorMessage: errorMessage(err) }))
+    } catch {
+      res.render('users/detail.njk', templateVars(req, { user: null, errorMessage: errorMessage(err) }))
+    }
+  }
+})
+
+// Unlock user
+usersRouter.post('/:id/unlock', requireAuth, requireRole('User Administration'), async (req, res) => {
+  try {
+    await ums.unlockUser(req.session.accessToken!, req.params.id)
+    res.redirect(`/users/${req.params.id}`)
+  } catch (err) {
+    try {
+      const user = await ums.getUser(req.session.accessToken!, req.params.id)
+      res.render('users/detail.njk', templateVars(req, { user, errorMessage: errorMessage(err) }))
+    } catch {
+      res.render('users/detail.njk', templateVars(req, { user: null, errorMessage: errorMessage(err) }))
+    }
+  }
+})
+
 // View / edit user
 usersRouter.get('/:id', requireAuth, async (req, res) => {
   try {

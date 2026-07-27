@@ -12,6 +12,8 @@ export interface UserDetailsDto {
 export interface UserDto {
   systemUserId: string
   active: boolean
+  locked: boolean
+  failedLoginAttempts: number
   userDetails: UserDetailsDto
 }
 

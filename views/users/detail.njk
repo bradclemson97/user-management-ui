@@ -62,9 +62,33 @@
       <hr class="govuk-section-break govuk-section-break--l govuk-section-break--visible">
 
       <h2 class="govuk-heading-l">Account</h2>
+
+      <p class="govuk-body">
+        Account status:
+        {% if user.locked %}
+          <strong class="govuk-tag govuk-tag--red">Locked</strong>
+        {% else %}
+          <strong class="govuk-tag govuk-tag--green">Active</strong>
+        {% endif %}
+      </p>
+
       <p class="govuk-body">
         <a href="/users/{{ user.systemUserId }}/reset-password" class="govuk-link">Reset password</a>
       </p>
+
+      {% if user.locked %}
+        <form method="post" action="/users/{{ user.systemUserId }}/unlock" novalidate>
+          <button class="govuk-button govuk-button--secondary" data-module="govuk-button" type="submit">
+            Unlock account
+          </button>
+        </form>
+      {% else %}
+        <form method="post" action="/users/{{ user.systemUserId }}/lock" novalidate>
+          <button class="govuk-button govuk-button--warning" data-module="govuk-button" type="submit">
+            Lock account
+          </button>
+        </form>
+      {% endif %}
 
       <hr class="govuk-section-break govuk-section-break--l govuk-section-break--visible">
 

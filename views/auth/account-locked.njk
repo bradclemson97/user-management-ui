@@ -1,0 +1,21 @@
+{% extends "layouts/base.njk" %}
+
+{% set pageHeading = "Account locked" %}
+
+{% block pageContent %}
+  <div class="govuk-grid-row">
+    <div class="govuk-grid-column-two-thirds">
+      <h1 class="govuk-heading-xl">Account locked</h1>
+
+      <p class="govuk-body">
+        Your account has been locked due to too many failed login attempts.
+      </p>
+
+      <p class="govuk-body">
+        Please contact your system administrator to unlock your account.
+      </p>
+
+      <a href="/auth/login" class="govuk-link">Return to sign in</a>
+    </div>
+  </div>
+{% endblock %}
