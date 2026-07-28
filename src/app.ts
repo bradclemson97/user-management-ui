@@ -11,6 +11,9 @@ import { profileRouter } from './routes/profile'
 export function createApp(oidcClient: Client): express.Application {
   const app = express()
 
+  // Trust one hop of reverse proxy (Nginx) so secure cookies and X-Forwarded-Proto work
+  app.set('trust proxy', 1)
+
   // Static assets — GOV.UK Frontend
   app.use(
     '/govuk',
