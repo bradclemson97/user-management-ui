@@ -1,6 +1,7 @@
 import { Router } from 'express'
 import { generators, type Client } from 'openid-client'
 import { getCurrentUser, recordLogin } from '../services/umsClient'
+import { getUserRoles } from '../services/acmClient'
 import config from '../config'
 
 function decodeJwtPayload(token: string): Record<string, unknown> {
@@ -72,7 +73,17 @@ export function authRouter(oidcClient: Client): Router {
         }
 
         if (systemUserId) {
-          req.session.currentUserRoles = (jwt.systemRoles as string[] | undefined) ?? []
+          const jwtSystemRoles = jwt.systemRoles as string[] | undefined
+          if (jwtSystemRoles && jwtSystemRoles.length > 0) {
+            req.session.currentUserRoles = jwtSystemRoles
+          } else {
+            try {
+              const userRoles = await getUserRoles(req.session.accessToken!, systemUserId)
+              req.session.currentUserRoles = userRoles.map(ur => ur.roleResponse.roleName)
+            } catch {
+              req.session.currentUserRoles = []
+            }
+          }
 
           try {
             await recordLogin(req.session.accessToken, systemUserId)
