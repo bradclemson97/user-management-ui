@@ -11,6 +11,12 @@ export const usersRouter = Router()
 
 function errorMessage(err: unknown): string {
   if (isAxiosError(err)) {
+    if (err.response?.status === 401) {
+      return 'Your session has expired. <a href="/auth/login" class="govuk-link">Sign in again</a> to continue.'
+    }
+    if (err.response?.status === 403) {
+      return 'You do not have permission to perform this action. Please contact your system administrator.'
+    }
     const data = err.response?.data as { message?: string } | undefined
     return data?.message ?? err.message
   }
@@ -25,15 +31,34 @@ function templateVars(req: { session: { currentUser?: UserDto; currentUserRoles?
 usersRouter.get('/', requireAuth, async (req, res) => {
   const name = (req.query.name as string) ?? ''
   const page = parseInt((req.query.page as string) ?? '0', 10)
+  const hasUserCoreAccess = req.session.currentUserRoles?.includes('User Core Access') ?? false
 
   const emptyState = (extra: Record<string, unknown> = {}) =>
     templateVars(req, { users: [], totalPages: 0, currentPage: 0, totalElements: 0, searchName: name, ...extra })
 
+  if (name.length === 0) {
+    if (!hasUserCoreAccess) {
+      return res.render('users/list.njk', emptyState({
+        infoMessage: 'Enter a name to search for users.',
+      }))
+    }
+    try {
+      const pageData = await ums.getAllUsers(req.session.accessToken!, page)
+      return res.render('users/list.njk', templateVars(req, {
+        users: pageData.content,
+        totalPages: pageData.totalPages,
+        currentPage: pageData.number,
+        totalElements: pageData.totalElements,
+        searchName: '',
+      }))
+    } catch (err) {
+      return res.render('users/list.njk', emptyState({ errorMessage: errorMessage(err) }))
+    }
+  }
+
   if (name.length < 2) {
     return res.render('users/list.njk', emptyState({
-      infoMessage: name.length === 0
-        ? 'Enter a name to search for users.'
-        : 'Enter at least 2 characters to search.',
+      infoMessage: 'Enter at least 2 characters to search.',
     }))
   }
 

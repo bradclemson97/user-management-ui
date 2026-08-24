@@ -53,6 +53,7 @@ export function authRouter(oidcClient: Client): Router {
 
       req.session.accessToken = tokenSet.access_token
       req.session.idToken = tokenSet.id_token
+      req.session.refreshToken = tokenSet.refresh_token
       req.session.state = undefined
       req.session.nonce = undefined
       req.session.codeVerifier = undefined

@@ -5,7 +5,7 @@
 {% from "govuk/components/footer/macro.njk" import govukFooter %}
 {% from "govuk/components/notification-banner/macro.njk" import govukNotificationBanner %}
 
-{% block pageTitle %}{{ pageHeading if pageHeading else "User Management" }} - User Management{% endblock %}
+{% block pageTitle %}{{ pageHeading if pageHeading else "GOV RBAC" }} - GOV RBAC{% endblock %}
 
 {% block head %}
   <link rel="stylesheet" href="/govuk/govuk-frontend.min.css">
@@ -16,7 +16,7 @@
 {% block header %}
   {{ govukHeader({ homepageUrl: "/" }) }}
   {{ govukServiceNavigation({
-    serviceName: "User Management",
+    serviceName: "GOV RBAC",
     serviceUrl: "/",
     navigation: [
       {

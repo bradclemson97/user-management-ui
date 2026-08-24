@@ -42,8 +42,11 @@
 
       {% if users.length %}
         <p class="govuk-body govuk-hint">
-          Showing {{ users.length }} of {{ totalElements }} user{{ "s" if totalElements != 1 }}
-          {% if searchName %} matching "<strong>{{ searchName }}</strong>"{% endif %}
+          {% if searchName %}
+            Showing {{ users.length }} of {{ totalElements }} user{{ "s" if totalElements != 1 }} matching "<strong>{{ searchName }}</strong>"
+          {% else %}
+            Showing {{ users.length }} of {{ totalElements }} user{{ "s" if totalElements != 1 }}
+          {% endif %}
         </p>
 
         <table class="govuk-table">
@@ -79,24 +82,30 @@
           <nav class="govuk-!-margin-top-4" aria-label="Pagination">
             <div class="govuk-body">
               {% if currentPage > 0 %}
-                <a href="/?name={{ searchName }}&page={{ currentPage - 1 }}" class="govuk-link govuk-!-margin-right-4">&laquo; Previous</a>
+                {% if searchName %}
+                  <a href="/?name={{ searchName }}&page={{ currentPage - 1 }}" class="govuk-link govuk-!-margin-right-4">&laquo; Previous</a>
+                {% else %}
+                  <a href="/?page={{ currentPage - 1 }}" class="govuk-link govuk-!-margin-right-4">&laquo; Previous</a>
+                {% endif %}
               {% endif %}
               <span>Page {{ currentPage + 1 }} of {{ totalPages }}</span>
               {% if currentPage < totalPages - 1 %}
-                <a href="/?name={{ searchName }}&page={{ currentPage + 1 }}" class="govuk-link govuk-!-margin-left-4">Next &raquo;</a>
+                {% if searchName %}
+                  <a href="/?name={{ searchName }}&page={{ currentPage + 1 }}" class="govuk-link govuk-!-margin-left-4">Next &raquo;</a>
+                {% else %}
+                  <a href="/?page={{ currentPage + 1 }}" class="govuk-link govuk-!-margin-left-4">Next &raquo;</a>
+                {% endif %}
               {% endif %}
             </div>
           </nav>
         {% endif %}
 
       {% else %}
-        <p class="govuk-body">
-          {% if searchName %}
-            No users found matching "<strong>{{ searchName }}</strong>".
-          {% else %}
-            No users found in the system.
-          {% endif %}
-        </p>
+        {% if searchName %}
+          <p class="govuk-body">No users found matching "<strong>{{ searchName }}</strong>".</p>
+        {% elif not infoMessage and not errorMessage %}
+          <p class="govuk-body">No users found in the system.</p>
+        {% endif %}
       {% endif %}
 
     </div>
