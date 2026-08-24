@@ -9,6 +9,17 @@ function client(accessToken: string) {
   })
 }
 
+export async function getAllUsers(
+  accessToken: string,
+  page = 0,
+  size = 25,
+): Promise<SpringPage<UserDto>> {
+  const res = await client(accessToken).get<SpringPage<UserDto>>('/v1/user/all', {
+    params: { pageNumber: page, pageSize: size },
+  })
+  return res.data
+}
+
 export async function searchUsers(
   accessToken: string,
   name: string,

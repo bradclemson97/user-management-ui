@@ -65,6 +65,7 @@ declare module 'express-session' {
   interface SessionData {
     accessToken?: string
     idToken?: string
+    refreshToken?: string
     state?: string
     nonce?: string
     codeVerifier?: string

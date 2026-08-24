@@ -58,6 +58,31 @@ export function createApp(oidcClient: Client): express.Application {
     }),
   )
 
+  // Proactively refresh the access token when it is within 60 seconds of expiry.
+  // Runs after session is loaded so the refresh token is available. If the refresh
+  // token is also expired, tokens are cleared so requireAuth redirects to login.
+  app.use(async (req, _res, next) => {
+    if (req.session.accessToken && req.session.refreshToken) {
+      const parts = req.session.accessToken.split('.')
+      if (parts.length === 3) {
+        try {
+          const payload = JSON.parse(Buffer.from(parts[1], 'base64url').toString()) as { exp?: number }
+          const exp = payload.exp
+          if (exp && exp < Math.floor(Date.now() / 1000) + 60) {
+            const tokenSet = await oidcClient.refresh(req.session.refreshToken)
+            req.session.accessToken = tokenSet.access_token
+            if (tokenSet.refresh_token) req.session.refreshToken = tokenSet.refresh_token
+            if (tokenSet.id_token) req.session.idToken = tokenSet.id_token
+          }
+        } catch {
+          req.session.accessToken = undefined
+          req.session.refreshToken = undefined
+        }
+      }
+    }
+    next()
+  })
+
   // Routes
   app.use('/auth', authRouter(oidcClient))
   app.use('/users', usersRouter)
