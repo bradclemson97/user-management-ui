@@ -73,11 +73,16 @@ export function authRouter(oidcClient: Client): Router {
         }
 
         if (systemUserId) {
-          try {
-            const userRoles = await getUserRoles(req.session.accessToken, systemUserId)
-            req.session.currentUserRoles = userRoles.map(ur => ur.roleResponse.roleName)
-          } catch {
-            req.session.currentUserRoles = []
+          const jwtSystemRoles = jwt.systemRoles as string[] | undefined
+          if (jwtSystemRoles && jwtSystemRoles.length > 0) {
+            req.session.currentUserRoles = jwtSystemRoles
+          } else {
+            try {
+              const userRoles = await getUserRoles(req.session.accessToken!, systemUserId)
+              req.session.currentUserRoles = userRoles.map(ur => ur.roleResponse.roleName)
+            } catch {
+              req.session.currentUserRoles = []
+            }
           }
 
           try {
