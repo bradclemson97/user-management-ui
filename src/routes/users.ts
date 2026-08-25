@@ -9,7 +9,7 @@ import { isAxiosError } from 'axios'
 
 export const usersRouter = Router()
 
-function errorMessage(err: unknown): string {
+export function errorMessage(err: unknown): string {
   if (isAxiosError(err)) {
     if (err.response?.status === 401) {
       return 'Your session has expired. <a href="/auth/login" class="govuk-link">Sign in again</a> to continue.'

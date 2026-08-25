@@ -7,6 +7,7 @@ import config from './config'
 import { authRouter } from './routes/auth'
 import { usersRouter } from './routes/users'
 import { profileRouter } from './routes/profile'
+import { isTokenExpiringSoon } from './utils/token'
 
 export function createApp(oidcClient: Client): express.Application {
   const app = express()
@@ -63,17 +64,12 @@ export function createApp(oidcClient: Client): express.Application {
   // token is also expired, tokens are cleared so requireAuth redirects to login.
   app.use(async (req, _res, next) => {
     if (req.session.accessToken && req.session.refreshToken) {
-      const parts = req.session.accessToken.split('.')
-      if (parts.length === 3) {
+      if (isTokenExpiringSoon(req.session.accessToken, 60)) {
         try {
-          const payload = JSON.parse(Buffer.from(parts[1], 'base64url').toString()) as { exp?: number }
-          const exp = payload.exp
-          if (exp && exp < Math.floor(Date.now() / 1000) + 60) {
-            const tokenSet = await oidcClient.refresh(req.session.refreshToken)
-            req.session.accessToken = tokenSet.access_token
-            if (tokenSet.refresh_token) req.session.refreshToken = tokenSet.refresh_token
-            if (tokenSet.id_token) req.session.idToken = tokenSet.id_token
-          }
+          const tokenSet = await oidcClient.refresh(req.session.refreshToken)
+          req.session.accessToken = tokenSet.access_token
+          if (tokenSet.refresh_token) req.session.refreshToken = tokenSet.refresh_token
+          if (tokenSet.id_token) req.session.idToken = tokenSet.id_token
         } catch {
           req.session.accessToken = undefined
           req.session.refreshToken = undefined
