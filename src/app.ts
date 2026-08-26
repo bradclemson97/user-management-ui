@@ -88,13 +88,16 @@ export function createApp(oidcClient: Client): express.Application {
 
   // 404
   app.use((_req, res) => {
-    res.status(404).render('users/list.njk', {
-      errorMessage: 'Page not found.',
-      users: [],
-      totalPages: 0,
-      currentPage: 0,
-      totalElements: 0,
-      searchName: '',
+    res.status(404).render('errors/404.njk', {
+      pageHeading: 'Page not found',
+    })
+  })
+
+  // 500
+  app.use((err: Error, _req: express.Request, res: express.Response, _next: express.NextFunction) => {
+    console.error(err)
+    res.status(500).render('errors/500.njk', {
+      pageHeading: 'Sorry, there is a problem with the service',
     })
   })
 

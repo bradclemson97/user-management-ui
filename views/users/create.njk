@@ -1,6 +1,5 @@
 {% extends "layouts/base.njk" %}
 
-{% from "govuk/components/back-link/macro.njk" import govukBackLink %}
 {% from "govuk/components/input/macro.njk" import govukInput %}
 {% from "govuk/components/button/macro.njk" import govukButton %}
 {% from "govuk/components/panel/macro.njk" import govukPanel %}
@@ -8,6 +7,15 @@
 {% from "govuk/components/inset-text/macro.njk" import govukInsetText %}
 
 {% set pageHeading = "Create user" %}
+
+{% block breadcrumbs %}
+  {{ govukBreadcrumbs({
+    items: [
+      { text: "Home", href: "/" },
+      { text: "Users", href: "/users" }
+    ]
+  }) }}
+{% endblock %}
 
 {% block pageContent %}
   <div class="govuk-grid-row">
@@ -49,8 +57,6 @@
         }) }}
 
       {% else %}
-
-        {{ govukBackLink({ text: "Back to users", href: "/" }) }}
 
         <h1 class="govuk-heading-xl">Create user</h1>
 

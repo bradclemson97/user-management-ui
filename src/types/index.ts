@@ -92,5 +92,6 @@ declare module 'express-session' {
     currentUser?: UserDto
     currentUserRoles?: string[]
     returnTo?: string
+    pendingRoleIds?: number[]
   }
 }

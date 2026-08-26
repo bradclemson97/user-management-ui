@@ -1,6 +1,5 @@
 {% extends "layouts/base.njk" %}
 
-{% from "govuk/components/back-link/macro.njk" import govukBackLink %}
 {% from "govuk/components/checkboxes/macro.njk" import govukCheckboxes %}
 {% from "govuk/components/button/macro.njk" import govukButton %}
 {% from "govuk/components/error-summary/macro.njk" import govukErrorSummary %}
@@ -8,8 +7,17 @@
 {% set fullName = (user.userDetails.firstName + " " + user.userDetails.lastName) if user else "User not found" %}
 {% set pageHeading = "Manage roles — " + fullName %}
 
+{% block breadcrumbs %}
+  {{ govukBreadcrumbs({
+    items: [
+      { text: "Home", href: "/" },
+      { text: "Users", href: "/users" },
+      { text: fullName, href: "/users/" + (user.systemUserId if user else "") }
+    ]
+  }) }}
+{% endblock %}
+
 {% block pageContent %}
-  {{ govukBackLink({ text: "Back to user", href: "/users/" + (user.systemUserId if user else "") }) }}
 
   {% if errorMessage %}
     {{ govukErrorSummary({
