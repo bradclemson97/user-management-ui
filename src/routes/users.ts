@@ -122,35 +122,62 @@ usersRouter.get('/:id/roles', requireAuth, requireRole('User Administration'), a
   }
 })
 
-// Manage user roles — submit
-usersRouter.post('/:id/roles', requireAuth, requireRole('User Administration'), async (req, res) => {
+// Manage user roles — submit (stash selection in session, redirect to confirm)
+usersRouter.post('/:id/roles', requireAuth, requireRole('User Administration'), (req, res) => {
   const rawRoleIds = req.body.roleIds
   const roleIds: number[] = rawRoleIds
     ? (Array.isArray(rawRoleIds) ? rawRoleIds : [rawRoleIds]).map(Number)
     : []
+  req.session.pendingRoleIds = roleIds
+  res.redirect(`/users/${req.params.id}/roles/confirm`)
+})
+
+// Roles — confirm page
+usersRouter.get('/:id/roles/confirm', requireAuth, requireRole('User Administration'), async (req, res) => {
+  const pendingRoleIds = req.session.pendingRoleIds ?? []
+  try {
+    const [user, allRoles, userRoles] = await Promise.all([
+      ums.getUser(req.session.accessToken!, req.params.id),
+      acm.getPermissionRoles(req.session.accessToken!),
+      acm.getUserRoles(req.session.accessToken!, req.params.id),
+    ])
+    const currentRoleIds = new Set(userRoles.map(ur => ur.roleResponse.id))
+    const pendingSet = new Set(pendingRoleIds)
+    const rolesBeingAdded = allRoles.filter(r => pendingSet.has(r.id) && !currentRoleIds.has(r.id))
+    const rolesBeingRemoved = allRoles.filter(r => currentRoleIds.has(r.id) && !pendingSet.has(r.id))
+    const rolesUnchanged = allRoles.filter(r => pendingSet.has(r.id) && currentRoleIds.has(r.id))
+    res.render('users/roles-confirm.njk', templateVars(req, {
+      user,
+      rolesBeingAdded,
+      rolesBeingRemoved,
+      rolesUnchanged,
+    }))
+  } catch (err) {
+    res.render('users/roles-confirm.njk', templateVars(req, {
+      user: null,
+      rolesBeingAdded: [],
+      rolesBeingRemoved: [],
+      rolesUnchanged: [],
+      errorMessage: errorMessage(err),
+    }))
+  }
+})
+
+// Roles — confirm submit (apply the stashed selection)
+usersRouter.post('/:id/roles/confirm', requireAuth, requireRole('User Administration'), async (req, res) => {
+  const roleIds = req.session.pendingRoleIds ?? []
+  req.session.pendingRoleIds = undefined
   try {
     await acm.saveUserRoles(req.session.accessToken!, req.params.id, roleIds)
     res.redirect(`/users/${req.params.id}`)
   } catch (err) {
-    try {
-      const [user, allRoles] = await Promise.all([
-        ums.getUser(req.session.accessToken!, req.params.id),
-        acm.getPermissionRoles(req.session.accessToken!),
-      ])
-      res.render('users/roles.njk', templateVars(req, {
-        user,
-        allRoles,
-        assignedRoleIds: roleIds,
-        errorMessage: errorMessage(err),
-      }))
-    } catch {
-      res.render('users/roles.njk', templateVars(req, {
-        user: null,
-        allRoles: [],
-        assignedRoleIds: roleIds,
-        errorMessage: errorMessage(err),
-      }))
-    }
+    res.render('users/roles-confirm.njk', templateVars(req, {
+      user: null,
+      rolesBeingAdded: [],
+      rolesBeingRemoved: [],
+      rolesUnchanged: [],
+      errorMessage: errorMessage(err),
+    }))
   }
 })
 

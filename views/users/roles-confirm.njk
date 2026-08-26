@@ -1,0 +1,68 @@
+{% extends "layouts/base.njk" %}
+
+{% from "govuk/components/button/macro.njk" import govukButton %}
+{% from "govuk/components/notification-banner/macro.njk" import govukNotificationBanner %}
+
+{% set fullName = (user.userDetails.firstName + " " + user.userDetails.lastName) if user else "User" %}
+{% set pageHeading = "Confirm role changes — " + fullName %}
+
+{% block breadcrumbs %}
+  {{ govukBreadcrumbs({
+    items: [
+      { text: "Home", href: "/" },
+      { text: "Users", href: "/users" },
+      { text: fullName, href: "/users/" + (user.systemUserId if user else "") }
+    ]
+  }) }}
+{% endblock %}
+
+{% block pageContent %}
+
+  {% if errorMessage %}
+    {{ govukNotificationBanner({
+      type: "problem",
+      html: "<p class=\"govuk-body\">" + errorMessage + "</p>"
+    }) }}
+  {% endif %}
+
+  <h1 class="govuk-heading-xl">{{ pageHeading }}</h1>
+
+  {% if rolesBeingAdded.length > 0 %}
+    <h2 class="govuk-heading-m">Roles being added</h2>
+    <ul class="govuk-list govuk-list--bullet">
+      {% for role in rolesBeingAdded %}
+        <li>{{ role.roleName }}</li>
+      {% endfor %}
+    </ul>
+  {% endif %}
+
+  {% if rolesBeingRemoved.length > 0 %}
+    <h2 class="govuk-heading-m">Roles being removed</h2>
+    <ul class="govuk-list govuk-list--bullet">
+      {% for role in rolesBeingRemoved %}
+        <li>{{ role.roleName }}</li>
+      {% endfor %}
+    </ul>
+  {% endif %}
+
+  {% if rolesBeingAdded.length === 0 and rolesBeingRemoved.length === 0 %}
+    <p class="govuk-body">No changes will be made to this user's roles.</p>
+  {% endif %}
+
+  {% if rolesUnchanged.length > 0 %}
+    <h2 class="govuk-heading-m">Roles unchanged</h2>
+    <ul class="govuk-list govuk-list--bullet">
+      {% for role in rolesUnchanged %}
+        <li>{{ role.roleName }}</li>
+      {% endfor %}
+    </ul>
+  {% endif %}
+
+  <form method="post" action="/users/{{ user.systemUserId if user else "" }}/roles/confirm" novalidate>
+    <div class="govuk-button-group">
+      {{ govukButton({ text: "Confirm changes" }) }}
+      <a class="govuk-link" href="/users/{{ user.systemUserId if user else "" }}/roles">Cancel and go back</a>
+    </div>
+  </form>
+
+{% endblock %}

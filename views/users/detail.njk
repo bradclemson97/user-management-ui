@@ -1,6 +1,5 @@
 {% extends "layouts/base.njk" %}
 
-{% from "govuk/components/back-link/macro.njk" import govukBackLink %}
 {% from "govuk/components/summary-list/macro.njk" import govukSummaryList %}
 {% from "govuk/components/input/macro.njk" import govukInput %}
 {% from "govuk/components/button/macro.njk" import govukButton %}
@@ -8,9 +7,16 @@
 {% set fullName = (user.userDetails.firstName + " " + user.userDetails.lastName) if user else "User not found" %}
 {% set pageHeading = fullName %}
 
-{% block pageContent %}
-  {{ govukBackLink({ text: "Back to users", href: "/" }) }}
+{% block breadcrumbs %}
+  {{ govukBreadcrumbs({
+    items: [
+      { text: "Home", href: "/" },
+      { text: "Users", href: "/users" }
+    ]
+  }) }}
+{% endblock %}
 
+{% block pageContent %}
   {% if user %}
     <h1 class="govuk-heading-xl">{{ fullName }}</h1>
 

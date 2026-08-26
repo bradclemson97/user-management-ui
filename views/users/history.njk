@@ -1,13 +1,21 @@
 {% extends "layouts/base.njk" %}
 
-{% from "govuk/components/back-link/macro.njk" import govukBackLink %}
 {% from "govuk/components/notification-banner/macro.njk" import govukNotificationBanner %}
 
 {% set fullName = (user.userDetails.firstName + " " + user.userDetails.lastName) if user else "User" %}
 {% set pageHeading = "Audit history — " + fullName %}
 
+{% block breadcrumbs %}
+  {{ govukBreadcrumbs({
+    items: [
+      { text: "Home", href: "/" },
+      { text: "Users", href: "/users" },
+      { text: fullName, href: "/users/" + (user.systemUserId if user else "") }
+    ]
+  }) }}
+{% endblock %}
+
 {% block pageContent %}
-  {{ govukBackLink({ text: "Back to user", href: "/users/" + (user.systemUserId if user else "") }) }}
 
   {% if errorMessage %}
     {{ govukNotificationBanner({

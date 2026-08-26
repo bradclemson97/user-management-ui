@@ -4,6 +4,7 @@
 {% from "govuk/components/service-navigation/macro.njk" import govukServiceNavigation %}
 {% from "govuk/components/footer/macro.njk" import govukFooter %}
 {% from "govuk/components/notification-banner/macro.njk" import govukNotificationBanner %}
+{% from "govuk/components/breadcrumbs/macro.njk" import govukBreadcrumbs %}
 
 {% block pageTitle %}{{ pageHeading if pageHeading else "GOV RBAC" }} - GOV RBAC{% endblock %}
 
@@ -45,6 +46,8 @@
       html: "<p class=\"govuk-body\">" + infoMessage + "</p>"
     }) }}
   {% endif %}
+
+  {% block breadcrumbs %}{% endblock %}
 
   {% block pageContent %}{% endblock %}
 {% endblock %}
