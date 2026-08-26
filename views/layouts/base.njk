@@ -34,6 +34,13 @@
 {% endblock %}
 
 {% block content %}
+  {% if flashMessage %}
+    {{ govukNotificationBanner({
+      type: flashMessage.type,
+      html: "<p class=\"govuk-body\">" + flashMessage.text + "</p>"
+    }) }}
+  {% endif %}
+
   {% if errorMessage %}
     {{ govukNotificationBanner({
       type: "important",
@@ -57,8 +64,5 @@
 {% endblock %}
 
 {% block bodyEnd %}
-  <script type="module">
-    import { initAll } from '/govuk/govuk-frontend.min.js'
-    initAll()
-  </script>
+  <script type="module" src="/js/init.js"></script>
 {% endblock %}

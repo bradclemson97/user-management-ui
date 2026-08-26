@@ -59,6 +59,7 @@
   {% endif %}
 
   <form method="post" action="/users/{{ user.systemUserId if user else "" }}/roles/confirm" novalidate>
+    <input type="hidden" name="_csrf" value="{{ csrfToken }}">
     <div class="govuk-button-group">
       {{ govukButton({ text: "Confirm changes" }) }}
       <a class="govuk-link" href="/users/{{ user.systemUserId if user else "" }}/roles">Cancel and go back</a>

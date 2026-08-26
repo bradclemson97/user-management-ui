@@ -87,12 +87,14 @@
 
       {% if user.locked %}
         <form method="post" action="/users/{{ user.systemUserId }}/unlock" novalidate>
+          <input type="hidden" name="_csrf" value="{{ csrfToken }}">
           <button class="govuk-button govuk-button--secondary" data-module="govuk-button" type="submit">
             Unlock account
           </button>
         </form>
       {% else %}
         <form method="post" action="/users/{{ user.systemUserId }}/lock" novalidate>
+          <input type="hidden" name="_csrf" value="{{ csrfToken }}">
           <button class="govuk-button govuk-button--warning" data-module="govuk-button" type="submit">
             Lock account
           </button>
@@ -104,6 +106,7 @@
       <h2 class="govuk-heading-l">Edit details</h2>
 
       <form method="post" action="/users/{{ user.systemUserId }}" novalidate>
+        <input type="hidden" name="_csrf" value="{{ csrfToken }}">
 
         <div class="govuk-form-group">
           <label class="govuk-label" for="title">Title <span class="govuk-hint govuk-!-display-inline">(optional)</span></label>
