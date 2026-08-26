@@ -60,6 +60,26 @@ export interface ResetPasswordResponse {
   password: string
 }
 
+export interface UserAuditRecord {
+  validFrom: string
+  validTo: string | null
+  lockedUserInd: string
+  activeInd: string
+  failedLoginAttempts: number
+  modifiedBy: string | null
+  modifiedDate: string | null
+}
+
+export interface UserRoleAuditRecord {
+  userRoleId: number
+  roleName: string
+  roleTypeCode: string
+  validFrom: string
+  validTo: string | null
+  assignedBy: string | null
+  assignedAt: string | null
+}
+
 // Augment express-session
 declare module 'express-session' {
   interface SessionData {
