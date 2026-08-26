@@ -1,0 +1,92 @@
+{% extends "layouts/base.njk" %}
+
+{% from "govuk/components/back-link/macro.njk" import govukBackLink %}
+{% from "govuk/components/notification-banner/macro.njk" import govukNotificationBanner %}
+
+{% set fullName = (user.userDetails.firstName + " " + user.userDetails.lastName) if user else "User" %}
+{% set pageHeading = "Audit history — " + fullName %}
+
+{% block pageContent %}
+  {{ govukBackLink({ text: "Back to user", href: "/users/" + (user.systemUserId if user else "") }) }}
+
+  {% if errorMessage %}
+    {{ govukNotificationBanner({
+      type: "problem",
+      html: "<p class=\"govuk-body\">" + errorMessage + "</p>"
+    }) }}
+  {% endif %}
+
+  <h1 class="govuk-heading-xl">{{ pageHeading }}</h1>
+
+  <h2 class="govuk-heading-l">Account changes</h2>
+
+  {% if userHistory and userHistory.length > 0 %}
+    <table class="govuk-table">
+      <thead class="govuk-table__head">
+        <tr class="govuk-table__row">
+          <th scope="col" class="govuk-table__header">Changed at</th>
+          <th scope="col" class="govuk-table__header">Active</th>
+          <th scope="col" class="govuk-table__header">Locked</th>
+          <th scope="col" class="govuk-table__header">Failed logins</th>
+          <th scope="col" class="govuk-table__header">Changed by</th>
+          <th scope="col" class="govuk-table__header">Valid until</th>
+        </tr>
+      </thead>
+      <tbody class="govuk-table__body">
+        {% for r in userHistory %}
+          <tr class="govuk-table__row">
+            <td class="govuk-table__cell">{{ r.validFrom | replace("T", " ") | truncate(19, true, "") }}</td>
+            <td class="govuk-table__cell">{{ r.activeInd }}</td>
+            <td class="govuk-table__cell">{{ r.lockedUserInd }}</td>
+            <td class="govuk-table__cell">{{ r.failedLoginAttempts }}</td>
+            <td class="govuk-table__cell">{{ r.modifiedByName if r.modifiedByName else "—" }}</td>
+            <td class="govuk-table__cell">
+              {% if r.validTo %}
+                {{ r.validTo | replace("T", " ") | truncate(19, true, "") }}
+              {% else %}
+                Current
+              {% endif %}
+            </td>
+          </tr>
+        {% endfor %}
+      </tbody>
+    </table>
+  {% else %}
+    <p class="govuk-body">No account history found.</p>
+  {% endif %}
+
+  <h2 class="govuk-heading-l">Role assignment history</h2>
+
+  {% if roleHistory and roleHistory.length > 0 %}
+    <table class="govuk-table">
+      <thead class="govuk-table__head">
+        <tr class="govuk-table__row">
+          <th scope="col" class="govuk-table__header">Role</th>
+          <th scope="col" class="govuk-table__header">Type</th>
+          <th scope="col" class="govuk-table__header">Assigned by</th>
+          <th scope="col" class="govuk-table__header">Assigned at</th>
+          <th scope="col" class="govuk-table__header">Removed at</th>
+        </tr>
+      </thead>
+      <tbody class="govuk-table__body">
+        {% for r in roleHistory %}
+          <tr class="govuk-table__row">
+            <td class="govuk-table__cell">{{ r.roleName }}</td>
+            <td class="govuk-table__cell">{{ r.roleTypeCode }}</td>
+            <td class="govuk-table__cell">{{ r.assignedByName if r.assignedByName else "—" }}</td>
+            <td class="govuk-table__cell">{{ r.validFrom | replace("T", " ") | truncate(19, true, "") }}</td>
+            <td class="govuk-table__cell">
+              {% if r.validTo %}
+                {{ r.validTo | replace("T", " ") | truncate(19, true, "") }}
+              {% else %}
+                Active
+              {% endif %}
+            </td>
+          </tr>
+        {% endfor %}
+      </tbody>
+    </table>
+  {% else %}
+    <p class="govuk-body">No role history found.</p>
+  {% endif %}
+{% endblock %}

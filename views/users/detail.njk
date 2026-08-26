@@ -54,6 +54,9 @@
       <p class="govuk-body">
         <a href="/users/{{ user.systemUserId }}/roles" class="govuk-link">Manage roles for this user</a>
       </p>
+      <p class="govuk-body">
+        <a href="/users/{{ user.systemUserId }}/history" class="govuk-link">View audit history</a>
+      </p>
     {% else %}
       <p class="govuk-body govuk-hint">You do not have permission to manage roles.</p>
     {% endif %}

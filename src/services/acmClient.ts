@@ -1,6 +1,6 @@
 import axios from 'axios'
 import config from '../config'
-import type { RoleResponse, UserRoleDto } from '../types'
+import type { RoleResponse, UserRoleDto, UserRoleAuditRecord } from '../types'
 
 function client(accessToken: string) {
   return axios.create({
@@ -30,5 +30,10 @@ export async function saveUserRoles(
     userRoleRequestList: roleIds.map(roleId => ({ roleId })),
   }
   const res = await client(accessToken).post<UserRoleDto[]>(`/v1/userRoles/${systemUserId}/roles`, body)
+  return res.data
+}
+
+export async function getUserRoleHistory(accessToken: string, systemUserId: string): Promise<UserRoleAuditRecord[]> {
+  const res = await client(accessToken).get<UserRoleAuditRecord[]>(`/v1/userRoles/${systemUserId}/roles/history`)
   return res.data
 }

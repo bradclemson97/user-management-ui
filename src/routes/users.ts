@@ -210,6 +210,27 @@ usersRouter.post('/:id/unlock', requireAuth, requireRole('User Administration'),
   }
 })
 
+// User history
+usersRouter.get('/:id/history', requireAuth, requireRole('User Administration'), async (req, res) => {
+  const systemUserId = req.params.id
+  try {
+    const [user, userHistory, roleHistory] = await Promise.all([
+      ums.getUser(req.session.accessToken!, systemUserId),
+      ums.getUserHistory(req.session.accessToken!, systemUserId),
+      acm.getUserRoleHistory(req.session.accessToken!, systemUserId),
+    ])
+    res.render('users/history.njk', templateVars(req, {
+      user,
+      userHistory,
+      roleHistory,
+    }))
+  } catch (err) {
+    res.render('users/history.njk', templateVars(req, {
+      errorMessage: errorMessage(err),
+    }))
+  }
+})
+
 // View / edit user
 usersRouter.get('/:id', requireAuth, async (req, res) => {
   try {

@@ -1,6 +1,6 @@
 import axios from 'axios'
 import config from '../config'
-import type { UserDto, SpringPage, CreateUserBody, CreateUserResponse, UpdateUserBody } from '../types'
+import type { UserDto, SpringPage, CreateUserBody, CreateUserResponse, UpdateUserBody, UserAuditRecord } from '../types'
 
 function client(accessToken: string) {
   return axios.create({
@@ -71,4 +71,9 @@ export async function lockUser(accessToken: string, systemUserId: string): Promi
 
 export async function unlockUser(accessToken: string, systemUserId: string): Promise<void> {
   await client(accessToken).delete(`/v1/user/${systemUserId}/lock`)
+}
+
+export async function getUserHistory(accessToken: string, systemUserId: string): Promise<UserAuditRecord[]> {
+  const res = await client(accessToken).get<UserAuditRecord[]>(`/v1/user/${systemUserId}/history`)
+  return res.data
 }
