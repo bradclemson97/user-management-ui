@@ -93,5 +93,7 @@ declare module 'express-session' {
     currentUserRoles?: string[]
     returnTo?: string
     pendingRoleIds?: number[]
+    csrfToken?: string
+    flashMessage?: { type: 'success' | 'info'; text: string }
   }
 }

@@ -61,6 +61,7 @@
         <h1 class="govuk-heading-xl">Create user</h1>
 
         <form method="post" action="/users/create" novalidate>
+          <input type="hidden" name="_csrf" value="{{ csrfToken }}">
 
           {{ govukInput({
             label: { text: "First name" },

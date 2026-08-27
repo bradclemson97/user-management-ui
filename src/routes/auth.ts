@@ -51,24 +51,25 @@ export function authRouter(oidcClient: Client): Router {
         },
       )
 
-      req.session.accessToken = tokenSet.access_token
-      req.session.idToken = tokenSet.id_token
-      req.session.refreshToken = tokenSet.refresh_token
-      req.session.state = undefined
-      req.session.nonce = undefined
-      req.session.codeVerifier = undefined
+      const accessToken = tokenSet.access_token
+      const idToken = tokenSet.id_token
+      const refreshToken = tokenSet.refresh_token
+      const returnTo = req.session.returnTo ?? '/'
 
-      if (req.session.accessToken) {
-        const jwt = decodeJwtPayload(req.session.accessToken)
+      let currentUser: Awaited<ReturnType<typeof getCurrentUser>> | undefined
+      let currentUserRoles: string[] = []
+
+      if (accessToken) {
+        const jwt = decodeJwtPayload(accessToken)
         const systemUserId = jwt.systemUserId as string | undefined
 
         try {
-          req.session.currentUser = await getCurrentUser(req.session.accessToken)
+          currentUser = await getCurrentUser(accessToken)
         } catch {
           // Non-fatal: user may not yet exist in UMS
         }
 
-        if (req.session.currentUser?.locked) {
+        if (currentUser?.locked) {
           req.session.destroy(() => {})
           return res.redirect('/auth/account-locked')
         }
@@ -76,29 +77,38 @@ export function authRouter(oidcClient: Client): Router {
         if (systemUserId) {
           const jwtSystemRoles = jwt.systemRoles as string[] | undefined
           if (jwtSystemRoles && jwtSystemRoles.length > 0) {
-            req.session.currentUserRoles = jwtSystemRoles
+            currentUserRoles = jwtSystemRoles
           } else {
             try {
-              const userRoles = await getUserRoles(req.session.accessToken!, systemUserId)
-              req.session.currentUserRoles = userRoles.map(ur => ur.roleResponse.roleName)
+              const userRoles = await getUserRoles(accessToken, systemUserId)
+              currentUserRoles = userRoles.map(ur => ur.roleResponse.roleName)
             } catch {
-              req.session.currentUserRoles = []
+              currentUserRoles = []
             }
           }
 
           try {
-            await recordLogin(req.session.accessToken, systemUserId)
+            await recordLogin(accessToken, systemUserId)
           } catch {
             // Non-fatal: login tracking is best-effort
           }
-        } else {
-          req.session.currentUserRoles = []
         }
       }
 
-      const returnTo = req.session.returnTo ?? '/'
-      req.session.returnTo = undefined
-      res.redirect(returnTo)
+      // Regenerate the session ID to prevent session fixation attacks.
+      // All data must be captured before regenerate() clears the session.
+      req.session.regenerate((err) => {
+        if (err) {
+          console.error('Session regeneration failed:', err)
+          return res.redirect('/auth/login')
+        }
+        req.session.accessToken = accessToken
+        req.session.idToken = idToken
+        req.session.refreshToken = refreshToken
+        req.session.currentUser = currentUser
+        req.session.currentUserRoles = currentUserRoles
+        res.redirect(returnTo)
+      })
     } catch (err) {
       console.error('OIDC callback error:', err)
       res.redirect('/auth/login')

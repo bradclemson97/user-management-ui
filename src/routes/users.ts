@@ -169,6 +169,7 @@ usersRouter.post('/:id/roles/confirm', requireAuth, requireRole('User Administra
   req.session.pendingRoleIds = undefined
   try {
     await acm.saveUserRoles(req.session.accessToken!, req.params.id, roleIds)
+    req.session.flashMessage = { type: 'success', text: 'Roles updated successfully.' }
     res.redirect(`/users/${req.params.id}`)
   } catch (err) {
     res.render('users/roles-confirm.njk', templateVars(req, {
@@ -211,6 +212,7 @@ usersRouter.post('/:id/reset-password', requireAuth, requireRole('User Administr
 usersRouter.post('/:id/lock', requireAuth, requireRole('User Administration'), async (req, res) => {
   try {
     await ums.lockUser(req.session.accessToken!, req.params.id)
+    req.session.flashMessage = { type: 'success', text: 'User account locked.' }
     res.redirect(`/users/${req.params.id}`)
   } catch (err) {
     try {
@@ -226,6 +228,7 @@ usersRouter.post('/:id/lock', requireAuth, requireRole('User Administration'), a
 usersRouter.post('/:id/unlock', requireAuth, requireRole('User Administration'), async (req, res) => {
   try {
     await ums.unlockUser(req.session.accessToken!, req.params.id)
+    req.session.flashMessage = { type: 'success', text: 'User account unlocked.' }
     res.redirect(`/users/${req.params.id}`)
   } catch (err) {
     try {
@@ -282,6 +285,7 @@ usersRouter.post('/:id', requireAuth, requireRole('User Administration'), async 
       lastName: lastName.trim(),
       primaryEmail: primaryEmail.trim(),
     })
+    req.session.flashMessage = { type: 'success', text: 'User details updated successfully.' }
     res.redirect(`/users/${req.params.id}`)
   } catch (err) {
     try {

@@ -15,13 +15,15 @@ Create a `.env` file in the project root (copy from `.env.example` if present):
 | Variable | Default | Description |
 |---|---|---|
 | `PORT` | `3000` | HTTP port |
-| `SESSION_SECRET` | `dev-secret-change-me` | Secret used to sign session cookies — use a long random string in production |
+| `SESSION_SECRET` | `dev-secret-change-me` | Secret used to sign session cookies — generate with `openssl rand -base64 32` in production |
 | `APP_BASE_URL` | `http://localhost:3000` | Public base URL of this application |
 | `KEYCLOAK_BASE_URL` | `http://localhost:9000` | Keycloak server URL |
 | `KEYCLOAK_REALM` | `system` | Keycloak realm name |
 | `KEYCLOAK_CLIENT_ID` | `user-management-ui` | OIDC client ID registered in Keycloak |
 | `KEYCLOAK_CLIENT_SECRET` | *(required)* | Client secret — obtain from Keycloak Admin Console after registering the client |
 | `UMS_BASE_URL` | `http://localhost:8080` | Base URL of the User Management Service |
+| `ACM_BASE_URL` | `http://localhost:8130` | Base URL of the Access Control Manager |
+| `KM_BASE_URL` | `http://localhost:8210` | Base URL of the Keycloak Manager |
 
 ## Running
 
@@ -53,9 +55,11 @@ The UI will be available at `http://localhost:3000`.
 | `/auth/logout` | Ends session and redirects to Keycloak logout | No |
 | `/users` | User list | Yes |
 | `/users/create` | Create user form | Yes |
+| `/users/:id` | View user profile | Yes |
+| `/users/:id/roles` | Manage user role assignments | Yes |
+| `/users/:id/roles/confirm` | Two-step role assignment confirmation | Yes |
+| `/users/:id/history` | Audit history — account changes and role assignments | Yes |
 | `/profile` | Current user profile | Yes |
-
-> **Logout**: There is currently no logout button in the UI. Navigate directly to `http://localhost:3000/auth/logout`.
 
 ## Session Handling
 

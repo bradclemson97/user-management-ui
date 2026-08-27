@@ -2,12 +2,15 @@ import express from 'express'
 import session from 'express-session'
 import nunjucks from 'nunjucks'
 import path from 'path'
+import helmet from 'helmet'
+import rateLimit from 'express-rate-limit'
 import type { Client } from 'openid-client'
 import config from './config'
 import { authRouter } from './routes/auth'
 import { usersRouter } from './routes/users'
 import { profileRouter } from './routes/profile'
 import { isTokenExpiringSoon } from './utils/token'
+import { csrfMiddleware } from './middleware/csrf'
 
 export function createApp(oidcClient: Client): express.Application {
   const app = express()
@@ -25,6 +28,30 @@ export function createApp(oidcClient: Client): express.Application {
     express.static(
       path.join(__dirname, '../node_modules/govuk-frontend/dist/govuk/assets'),
     ),
+  )
+
+  // Local JS assets (e.g. GOV.UK init module)
+  app.use('/js', express.static(path.join(__dirname, '../public/js')))
+
+  // HTTP security headers
+  app.use(
+    helmet({
+      contentSecurityPolicy: {
+        directives: {
+          defaultSrc: ["'self'"],
+          scriptSrc: ["'self'"],
+          styleSrc: ["'self'"],
+          imgSrc: ["'self'", 'data:'],
+          fontSrc: ["'self'"],
+          connectSrc: ["'self'"],
+        },
+      },
+      hsts: {
+        maxAge: 31536000,
+        includeSubDomains: true,
+        preload: true,
+      },
+    }),
   )
 
   // Nunjucks
@@ -60,8 +87,6 @@ export function createApp(oidcClient: Client): express.Application {
   )
 
   // Proactively refresh the access token when it is within 60 seconds of expiry.
-  // Runs after session is loaded so the refresh token is available. If the refresh
-  // token is also expired, tokens are cleared so requireAuth redirects to login.
   app.use(async (req, _res, next) => {
     if (req.session.accessToken && req.session.refreshToken) {
       if (isTokenExpiringSoon(req.session.accessToken, 60)) {
@@ -78,6 +103,27 @@ export function createApp(oidcClient: Client): express.Application {
     }
     next()
   })
+
+  // CSRF protection for all state-changing requests
+  app.use(csrfMiddleware)
+
+  // Move flash message from session to res.locals for one-time display
+  app.use((req, res, next) => {
+    if (req.session.flashMessage) {
+      res.locals.flashMessage = req.session.flashMessage
+      req.session.flashMessage = undefined
+    }
+    next()
+  })
+
+  // Rate-limit the OIDC login initiation endpoint
+  const loginLimiter = rateLimit({
+    windowMs: 15 * 60 * 1000,
+    limit: 20,
+    standardHeaders: 'draft-7',
+    legacyHeaders: false,
+  })
+  app.use('/auth/login', loginLimiter)
 
   // Routes
   app.use('/auth', authRouter(oidcClient))
